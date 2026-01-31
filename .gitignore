@@ -1,3 +1,5 @@
 *.csv
 *.npy
 __pycache__
+.venv
+.idea

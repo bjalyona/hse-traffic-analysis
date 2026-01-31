@@ -1,6 +1,4 @@
-import numpy as np
-import pandas as pd
-from handlers import *
+from process_data.handlers import *
 
 
 class Pipeline:
@@ -23,15 +21,11 @@ class Pipeline:
         """Запуск обработки"""
         self.ctx = {'file_path': file_path}
         
-        print("=" * 50)
-        print("ЗАПУСК ОБРАБОТКИ")
-        print("=" * 50)
-        
         try:
             df = self.first.handle(None, self.ctx)
             
             if df is None or len(df) == 0:
-                print("ОШИБКА: нет данных")
+                print("Ошибка: нет данных")
                 return None
             
             # Получаем X и y
@@ -39,7 +33,7 @@ class Pipeline:
             y_col = self.ctx.get('target', 'salary')
             
             if y_col not in df.columns:
-                print(f"ОШИБКА: нет колонки {y_col}")
+                print(f"Ошибка: нет колонки {y_col}")
                 return None
             
             X = df[X_cols].values.astype(np.float32)
@@ -49,15 +43,10 @@ class Pipeline:
             X = np.nan_to_num(X)
             y = np.nan_to_num(y)
             
-            print(f"\nРЕЗУЛЬТАТ:")
-            print(f"X: {X.shape} (признаки: {X_cols})")
-            print(f"y: {y.shape}")
-            print(f"Пример зарплат: {y[:5]}")
-            
             return X, y
             
         except Exception as e:
-            print(f"ОШИБКА: {e}")
+            print(f"Ошибка: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -72,12 +61,12 @@ class Pipeline:
             
             np.save(x_path, X)
             np.save(y_path, y)
-            
-            print(f"\nСОХРАНЕНО:")
-            print(f"{x_path} - {X.shape}")
-            print(f"{y_path} - {y.shape}")
+
+            print(f"Данные сохранены:")
+            print(f"  Признаки: {x_path} ({X.shape[0]} строк, {X.shape[1]} признаков)")
+            print(f"  Целевые значения: {y_path} ({y.shape[0]} значений)")
             return True
             
         except Exception as e:
-            print(f"ОШИБКА СОХРАНЕНИЯ: {e}")
+            print(f"Ошибка сохранения: {e}")
             return False

@@ -6,7 +6,7 @@
 
 import sys
 import os
-from pipeline import Pipeline
+from process_data.pipeline import Pipeline
 
 
 def main():

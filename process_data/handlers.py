@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
-from utils import DataCleaner, FeatureEncoder
+from .utils import DataCleaner, FeatureEncoder
 
 
 class Handler(ABC):
