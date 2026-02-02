@@ -1,6 +1,7 @@
+"""
+Пакет для парса данных
+"""
 from .pipeline import Pipeline
-from .handlers import *
-from .utils import DataCleaner, FeatureEncoder
+from .utils import DataCleaner
 
-__version__ = "1.0.0"
-__all__ = ["Pipeline", "DataCleaner", "FeatureEncoder"]
+__all__ = ["Pipeline", "DataCleaner"]

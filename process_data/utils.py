@@ -1,74 +1,65 @@
 import re
-import numpy as np
+from typing import Optional
+
 import pandas as pd
-from typing import Optional, List
 
 
 class DataCleaner:
-    """Утилиты для очистки данных"""
-    
+    """Класс для очистки и извлечения данных из текстовых полей."""
+
     @staticmethod
-    def clean_salary(salary_str: str) -> Optional[float]:
-        """Очищает зарплату: '27 000 руб.' -> 27000.0"""
-        if pd.isna(salary_str):
+    def clean_salary(text: str) -> Optional[float]:
+        """Очистка зарплаты из строки, преобразование в рубли."""
+        if not isinstance(text, str):
             return None
-            
-        if isinstance(salary_str, (int, float)):
-            return float(salary_str)
-            
-        if not isinstance(salary_str, str):
+
+        # Удаляем все нецифровые символы
+        cleaned = re.sub(r'[^\d]', '', text)
+
+        if not cleaned:
             return None
-        
-        # Удаляем всё кроме цифр и пробелов
-        cleaned = re.sub(r'[^\d\s]', '', salary_str)
-        try:
-            return float(cleaned.replace(' ', ''))
-        except:
-            return None
-    
+
+        salary = float(cleaned)
+
+        # Если число маленькое, но есть указание на рубли - умножаем на 1000
+        if (salary < 100 and
+                any(word in text.lower() for word in ['руб', 'р.', 'зарплат', 'зп'])):
+            salary *= 1000
+
+        return salary
+
     @staticmethod
     def extract_age(text: str) -> Optional[int]:
-        """Извлекает возраст: 'Мужчина, 42 года' -> 42"""
-        if pd.isna(text) or not isinstance(text, str):
+        """Извлечение возраста из текста."""
+        if not isinstance(text, str):
             return None
-            
-        match = re.search(r'(\d+)\s*год', text)
+
+        match = re.search(r"(\d+)\s*(год|года|лет)", text)
         return int(match.group(1)) if match else None
-    
+
     @staticmethod
-    def extract_gender(text: str) -> str:
-        """Извлекает пол: 'Мужчина' -> 'male'"""
-        if pd.isna(text) or not isinstance(text, str):
-            return 'unknown'
-            
-        if 'Мужчина' in text:
-            return 'male'
-        elif 'Женщина' in text:
-            return 'female'
-        return 'unknown'
-    
-    @staticmethod
-    def extract_city(text: str) -> Optional[str]:
-        """Извлекает город: 'Москва, готов к переезду' -> 'Москва'"""
-        if pd.isna(text) or not isinstance(text, str):
+    def extract_experience_years(text: str) -> Optional[float]:
+        """Извлечение опыта работы в годах."""
+        if not isinstance(text, str):
             return None
-            
-        parts = text.split(',')
-        return parts[0].strip() if parts else None
 
+        years_match = re.search(r"(\d+)\s*лет", text)
+        months_match = re.search(r"(\d+)\s*месяц", text)
 
-class FeatureEncoder:
-    """Утилиты для кодирования признаков"""
-    
+        years = int(years_match.group(1)) if years_match else 0
+        months = int(months_match.group(1)) if months_match else 0
+
+        total = years + months / 12
+        return total if total > 0 else None
+
     @staticmethod
-    def normalize(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
-        """Нормализация: (x - min) / (max - min)"""
-        for col in cols:
-            if col in df.columns:
-                min_val = df[col].min()
-                max_val = df[col].max()
-                if max_val > min_val:
-                    df[f'{col}_norm'] = (df[col] - min_val) / (max_val - min_val)
-                else:
-                    df[f'{col}_norm'] = 0
-        return df
+    def clean_salary_series(series: pd.Series) -> pd.Series:
+        """Очистка зарплат из pandas Series."""
+        return (
+            series.astype(str)
+            .str.replace(r"[^\d]", "", regex=True)
+            .replace("", pd.NA)
+            .replace("nan", pd.NA)
+            .astype("Int64")
+            .astype(float)
+        )
